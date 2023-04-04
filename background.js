@@ -20,19 +20,6 @@ function addModal() {
   newModalContainer.style.justifyContent = "center";
   newModalContainer.style.alignItems = "center";
 
-  // Create the close button
-  // const closeButton = document.createElement("span");
-  // closeButton.innerHTML = "&times;";
-  // closeButton.style.color = "black";
-
-  // closeButton.style.float = "right";
-  // closeButton.style.fontSize = "28px";
-  // closeButton.style.fontWeight = "bold";
-  // closeButton.style.cursor = "pointer";
-  // closeButton.addEventListener("click", function () {
-  //   newModalContainer.style.display = "none";
-  //   newModalContainer.remove();
-  // });
 
   const closeButton = document.createElement("span");
   closeButton.innerHTML = "&times;";
@@ -58,12 +45,14 @@ function addModal() {
 
   const button = document.createElement("button");
   button.innerHTML = "New Joke!";
-  button.style.backgroundColor = "#a832a4";
+  button.style.backgroundColor = "#96DED1";
   button.style.border = "none";
+    button.style.width = "92%";
+
   button.style.position = "absolute";
   button.style.bottom = "15px";
   button.style.left = "15px";
-  button.style.color = "white";
+  button.style.color = "black";
   button.style.padding = "10px";
   button.style.fontWeight = "bold"
   button.style.cursor = "pointer";
@@ -76,12 +65,13 @@ function addModal() {
   });
 
   // Add event listener to close modal if clicked outside of it
-  document.addEventListener("click", function (event) {
-    if (event.target === newModalContainer) {
-      newModalContainer.style.display = "none";
-      newModalContainer.remove();
-    }
-  });
+ document.addEventListener("click", function (event) {
+   if (!newModalContainer.contains(event.target)) {
+     newModalContainer.style.display = "none";
+     newModalContainer.remove();
+   }
+ });
+
   // Create the loading text
   const jokeElement = document.createElement("p");
   jokeElement.style.marginTop = "5px";
@@ -110,24 +100,24 @@ function addModal() {
     jokeElement.style.minHeight = "200px";
     jokeElement.style.maxHeight = "200px";
     jokeElement.style.fontSize = "17px";
-    jokeElement.style.paddingRight = "8px"; // Add padding for scrollbar width
-    jokeElement.style.webkitOverflowScrolling = "touch"; // Enable momentum scrolling on iOS
-    jokeElement.style.scrollbarWidth = "thin"; // Set scrollbar width on Firefox
-    jokeElement.style.scrollbarColor = "#888 #f1f1f1"; // Set custom scrollbar colors
-    jokeElement.style.cssText += `
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: #f1f1f1;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #888;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
-  }
-`;
+    // jokeElement.style.paddingRight = "8px"; // Add padding for scrollbar width
+    // jokeElement.style.webkitOverflowScrolling = "touch"; // Enable momentum scrolling on iOS
+//     jokeElement.style.scrollbarWidth = "thin"; // Set scrollbar width on Firefox
+//     jokeElement.style.scrollbarColor = "#888 #f1f1f1"; // Set custom scrollbar colors
+//     jokeElement.style.cssText += `
+//   ::-webkit-scrollbar {
+//     width: 8px;
+//   }
+//   ::-webkit-scrollbar-track {
+//     background-color: #f1f1f1;
+//   }
+//   ::-webkit-scrollbar-thumb {
+//     background-color: #888;
+//   }
+//   ::-webkit-scrollbar-thumb:hover {
+//     background-color: #555;
+//   }
+// `;
 
     fetch("https://v2.jokeapi.dev/joke/Any?type=single")
       .then((data) => data.json())
@@ -151,5 +141,14 @@ function addHeader() {
 }
 
 chrome.browserAction.onClicked.addListener(function (tab) {
+  addHeader();
+});
+
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+  if (changeInfo.status === "complete") {
+    addHeader(tabId);
+  }
+});
+chrome.tabs.onCreated.addListener(function (tab) {
   addHeader();
 });
