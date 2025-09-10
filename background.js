@@ -123,26 +123,7 @@ async function executeOnActiveTab() {
   }
 }
 
-// Handle extension icon click
+// Handle extension icon click - this is the only trigger now
 chrome.action.onClicked.addListener(async (tab) => {
-  await executeOnActiveTab();
-});
-
-// Handle tab updates
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete") {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tabId },
-        func: addModal
-      });
-    } catch (error) {
-      console.error('Failed to execute script on tab update:', error);
-    }
-  }
-});
-
-// Handle new tab creation
-chrome.tabs.onCreated.addListener(async (tab) => {
   await executeOnActiveTab();
 });
