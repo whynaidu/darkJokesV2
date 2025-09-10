@@ -20,7 +20,6 @@ function addModal() {
   newModalContainer.style.justifyContent = "center";
   newModalContainer.style.alignItems = "center";
 
-
   const closeButton = document.createElement("span");
   closeButton.innerHTML = "&times;";
   closeButton.style.color = "white";
@@ -37,7 +36,6 @@ function addModal() {
 
   // Create the modal content
   const modalContent = document.createElement("div");
-
   modalContent.style.backgroundColor = "transparent";
   modalContent.style.margin = "0";
   modalContent.style.padding = "20px";
@@ -47,16 +45,14 @@ function addModal() {
   button.innerHTML = "New Joke!";
   button.style.backgroundColor = "#96DED1";
   button.style.border = "none";
-    button.style.width = "92%";
-
+  button.style.width = "92%";
   button.style.position = "absolute";
   button.style.bottom = "15px";
   button.style.left = "15px";
   button.style.color = "black";
   button.style.padding = "10px";
-  button.style.fontWeight = "bold"
+  button.style.fontWeight = "bold";
   button.style.cursor = "pointer";
-
   button.style.borderRadius = "10px";
 
   button.addEventListener("click", function () {
@@ -65,24 +61,22 @@ function addModal() {
   });
 
   // Add event listener to close modal if clicked outside of it
- document.addEventListener("click", function (event) {
-   if (!newModalContainer.contains(event.target)) {
-     newModalContainer.style.display = "none";
-     newModalContainer.remove();
-   }
- });
+  document.addEventListener("click", function (event) {
+    if (!newModalContainer.contains(event.target)) {
+      newModalContainer.style.display = "none";
+      newModalContainer.remove();
+    }
+  });
 
   // Create the loading text
   const jokeElement = document.createElement("p");
   jokeElement.style.marginTop = "5px";
   jokeElement.style.width = "95%";
-
   jokeElement.innerHTML = "Loading...";
 
   // Append the modal content and close button to the modal container
   modalContent.appendChild(closeButton);
   newModalContainer.appendChild(modalContent);
-
   modalContent.appendChild(jokeElement);
   modalContent.appendChild(button);
 
@@ -95,29 +89,10 @@ function addModal() {
   function getJokes() {
     const jokeElement = document.querySelector("#my-modal > div > p");
     jokeElement.style.color = "white";
-
     jokeElement.style.overflowY = "auto";
     jokeElement.style.minHeight = "200px";
     jokeElement.style.maxHeight = "200px";
     jokeElement.style.fontSize = "17px";
-    // jokeElement.style.paddingRight = "8px"; // Add padding for scrollbar width
-    // jokeElement.style.webkitOverflowScrolling = "touch"; // Enable momentum scrolling on iOS
-//     jokeElement.style.scrollbarWidth = "thin"; // Set scrollbar width on Firefox
-//     jokeElement.style.scrollbarColor = "#888 #f1f1f1"; // Set custom scrollbar colors
-//     jokeElement.style.cssText += `
-//   ::-webkit-scrollbar {
-//     width: 8px;
-//   }
-//   ::-webkit-scrollbar-track {
-//     background-color: #f1f1f1;
-//   }
-//   ::-webkit-scrollbar-thumb {
-//     background-color: #888;
-//   }
-//   ::-webkit-scrollbar-thumb:hover {
-//     background-color: #555;
-//   }
-// `;
 
     fetch("https://v2.jokeapi.dev/joke/Any?type=single")
       .then((data) => data.json())
@@ -132,23 +107,42 @@ function addModal() {
   getJokes();
 }
 
-function addHeader() {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.executeScript(tabs[0].id, {
-      code: `(${addModal.toString()})()`,
-    });
-  });
+// Execute script on the active tab
+async function executeOnActiveTab() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (tab && tab.id) {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: addModal
+      });
+    }
+  } catch (error) {
+    console.error('Failed to execute script:', error);
+  }
 }
 
-chrome.browserAction.onClicked.addListener(function (tab) {
-  addHeader();
+// Handle extension icon click
+chrome.action.onClicked.addListener(async (tab) => {
+  await executeOnActiveTab();
 });
 
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+// Handle tab updates
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete") {
-    addHeader(tabId);
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: addModal
+      });
+    } catch (error) {
+      console.error('Failed to execute script on tab update:', error);
+    }
   }
 });
-chrome.tabs.onCreated.addListener(function (tab) {
-  addHeader();
+
+// Handle new tab creation
+chrome.tabs.onCreated.addListener(async (tab) => {
+  await executeOnActiveTab();
 });
